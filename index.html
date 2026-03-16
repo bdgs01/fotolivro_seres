@@ -487,27 +487,24 @@
       <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-69-scaled.jpg" src="" /></div>
       <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-70-scaled.jpg" src="" /></div>
       <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-71-scaled.jpg" src="" /></div>
-      <div class="page page-blank"></div>
     </div>
   </div>
 
   <div id="controls">
-    <button class="btn" id="btn-prev">← Anterior</button>
+    <button class="btn-icon" id="btn-prev">←</button>
     <span id="page-indicator">Página 1 de 71</span>
-    <button class="btn" id="btn-next">Próxima →</button>
-    <button class="btn-icon" id="btn-zoom" title="Zoom na página atual">🔍</button>
-    <button class="btn-icon" id="btn-fullscreen" title="Tela cheia">⛶</button>
+    <button class="btn-icon" id="btn-next">→</button>
+    <button class="btn-icon" id="btn-zoom">🔍</button>
+    <button class="btn-icon" id="btn-fullscreen">⛶</button>
   </div>
 
   <div id="thumbnails"></div>
-
-  <p class="hint">Arraste a borda da página para virar • Duplo clique para zoom • Setas do teclado</p>
+  <div id="bg-loading"></div>
 </div>
-
-<div id="bg-loading"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
 <script>
+  // Array de URLs das imagens
   const images = [
     "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-01-scaled.jpg",
     "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-02-scaled.jpg",
@@ -584,12 +581,11 @@
 
   const INITIAL_LOAD  = 6;
   const PRELOAD_AHEAD = 6;
-  const THUMB_WINDOW  = 5; // quantas thumbs mostrar por vez
+  const THUMB_WINDOW  = 5;
   const loaded = new Array(images.length).fill(false);
   let pageFlip = null;
-  const isMobile = window.innerWidth <= 600;
+  const isMobile = window.innerWidth <= 600; // Variável isMobile do seu código original
 
-  // Preview no loading
   const previewContainer = document.getElementById('loading-pages-preview');
   const previewThumbs = [];
   const previewCount = Math.min(INITIAL_LOAD, images.length);
@@ -597,6 +593,7 @@
     const wrap = document.createElement('div');
     wrap.className = 'loading-thumb';
     const img = document.createElement('img');
+    img.src = '';
     wrap.appendChild(img);
     previewContainer.appendChild(wrap);
     previewThumbs.push({ wrap, img });
