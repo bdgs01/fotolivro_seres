@@ -1,623 +1,172 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Seres 2026</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Seres 2026 - Escolha a Experiência</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    html, body {
-      overflow: hidden;
-      height: 100%;
-      width: 100%;
+    /* ── ESTILOS DA TELA DE ESCOLHA (ROTEADOR) ── */
+    body { margin: 0; padding: 0; background: #0d0805; }
+    #router-ui {
+      position: fixed; inset: 0;
+      background: radial-gradient(circle at center, #2c1810 0%, #0d0805 100%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      z-index: 99999; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #e8dcc8; text-align: center; padding: 20px;
     }
-
-    body {
-      background: radial-gradient(ellipse at center, #2c1810 0%, #0d0805 100%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      font-family: Georgia, serif;
+    .router-title { font-size: 32px; font-weight: bold; margin-bottom: 10px; color: #d4a96a; letter-spacing: 2px; }
+    .router-subtitle { font-size: 18px; margin-bottom: 50px; opacity: 0.8; font-weight: 300; }
+    .router-buttons { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 600px; }
+    .router-btn {
+      background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(212, 169, 106, 0.3);
+      color: #e8dcc8; padding: 30px 40px; border-radius: 16px; font-size: 20px; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; gap: 15px; transition: all 0.3s ease; flex: 1; min-width: 200px;
     }
-
-    /* ── Loading screen ── */
-    #loading-screen {
-      position: fixed;
-      inset: 0;
-      background: radial-gradient(ellipse at center, #2c1810 0%, #0d0805 100%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      gap: 28px;
-      transition: opacity 0.6s ease;
-    }
-
-    #loading-screen.fade-out {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    #loading-title {
-      color: #e8dcc8;
-      font-size: 22px;
-      letter-spacing: 2px;
-      opacity: 0.85;
-    }
-
-    #loading-subtitle {
-      color: rgba(255,255,255,0.3);
-      font-size: 13px;
-      letter-spacing: 1px;
-      margin-top: -18px;
-    }
-
-    #loading-bar-wrap {
-      width: 260px;
-      height: 3px;
-      background: rgba(255,255,255,0.08);
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
-    #loading-bar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(to right, #a0724a, #d4a96a);
-      border-radius: 10px;
-      transition: width 0.3s ease;
-    }
-
-    #loading-percent {
-      color: rgba(255,255,255,0.25);
-      font-size: 12px;
-      letter-spacing: 1px;
-    }
-
-    #loading-pages-preview {
-      display: flex;
-      gap: 8px;
-      margin-top: 4px;
-    }
-
-    .loading-thumb {
-      width: 52px;
-      height: 39px;
-      border-radius: 3px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-      overflow: hidden;
-      transition: opacity 0.4s;
-      opacity: 0.3;
-    }
-
-    .loading-thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .loading-thumb.loaded {
-      opacity: 1;
-      border-color: rgba(212,169,106,0.4);
-    }
-
-    /* ── Flipbook ── */
-    #flipbook-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      opacity: 0;
-      transition: opacity 0.6s ease;
-      width: 100%;
-    }
-
-    #flipbook-wrapper.visible {
-      opacity: 1;
-    }
-
-    #flipbook-container {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-    }
-
-    #flipbook {
-      box-shadow: 0 40px 100px rgba(0,0,0,0.8);
-    }
-
-    .page {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #111;
-    }
-
-    .page img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
-      pointer-events: none;
-      user-select: none;
-      -webkit-user-drag: none;
-    }
-
-    .page-blank {
-      width: 100%;
-      height: 100%;
-      background: #1a1008;
-    }
-
-    /* ── Zoom overlay ── */
-    #zoom-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.93);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-    }
-
-    #zoom-overlay.active { display: flex; }
-
-    #zoom-img-wrap {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-    }
-
-    #zoom-img {
-      max-width: 90vw;
-      max-height: 85vh;
-      object-fit: contain;
-      border-radius: 4px;
-      box-shadow: 0 30px 80px rgba(0,0,0,0.9);
-      transition: transform 0.15s ease, opacity 0.25s ease;
-      transform-origin: center center;
-      user-select: none;
-      -webkit-user-drag: none;
-    }
-
-    .zoom-arrow {
-      position: fixed;
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.15);
-      color: #e8dcc8;
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      font-size: 18px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s, opacity 0.2s;
-      z-index: 1002;
-    }
-
-    .zoom-arrow:hover { background: rgba(255,255,255,0.18); }
-    .zoom-arrow.hidden { opacity: 0; pointer-events: none; }
-
-    #zoom-arrow-left  { left: 16px; }
-    #zoom-arrow-right { right: 16px; }
-
-    #zoom-page-indicator {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: rgba(255,255,255,0.35);
-      font-size: 12px;
-      letter-spacing: 0.4px;
-      pointer-events: none;
-    }
-
-    #zoom-close {
-      position: fixed;
-      top: 16px;
-      right: 20px;
-      color: rgba(255,255,255,0.5);
-      font-size: 26px;
-      cursor: pointer;
-      z-index: 1003;
-      line-height: 1;
-      transition: color 0.2s;
-    }
-
-    #zoom-close:hover { color: #fff; }
-
-    #zoom-hint-text {
-      position: fixed;
-      bottom: 40px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: rgba(255,255,255,0.18);
-      font-size: 11px;
-      pointer-events: none;
-      white-space: nowrap;
-    }
-
-    /* ── Controles ── */
-    #controls {
-      margin-top: 18px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .btn {
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.18);
-      color: #e8dcc8;
-      padding: 9px 20px;
-      border-radius: 30px;
-      cursor: pointer;
-      font-size: 13px;
-      letter-spacing: 0.4px;
-      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-      white-space: nowrap;
-    }
-
-    .btn:hover:not(:disabled) { background: rgba(255,255,255,0.14); }
-    .btn:disabled { opacity: 0.25; cursor: default; }
-    .btn.flipping { animation: btnPulse 0.55s ease; }
-
-    @keyframes btnPulse {
-      0%   { transform: scale(1); }
-      30%  { transform: scale(0.93); }
-      70%  { transform: scale(1.04); }
-      100% { transform: scale(1); }
-    }
-
-    #page-indicator {
-      color: rgba(255,255,255,0.35);
-      font-size: 13px;
-      min-width: 90px;
-      text-align: center;
-    }
-
-    .btn-icon {
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.18);
-      color: #e8dcc8;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 15px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s;
-      flex-shrink: 0;
-    }
-
-    .btn-icon:hover { background: rgba(255,255,255,0.14); }
-
-    /* ── Miniaturas (janela deslizante de 5) ── */
-    #thumbnails {
-      margin-top: 16px;
-      display: flex;
-      gap: 8px;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 10px 16px;
-      background: rgba(0,0,0,0.3);
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.06);
-    }
-
-    .thumb-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      flex-shrink: 0;
-      transition: opacity 0.3s;
-    }
-
-    .thumb {
-      width: 72px;
-      height: 54px;
-      object-fit: cover;
-      border-radius: 3px;
-      cursor: pointer;
-      border: 2px solid transparent;
-      opacity: 0.5;
-      transition: opacity 0.25s, border-color 0.25s, transform 0.2s, box-shadow 0.25s;
-      display: block;
-      user-select: none;
-    }
-
-    .thumb:hover {
-      opacity: 0.85;
-      transform: translateY(-3px);
-      box-shadow: 0 6px 18px rgba(0,0,0,0.5);
-    }
-
-    .thumb.active {
-      opacity: 1;
-      border-color: #d4a96a;
-      box-shadow: 0 0 12px rgba(212,169,106,0.4);
-      transform: translateY(-3px);
-    }
-
-    .thumb-label {
-      font-size: 10px;
-      color: rgba(255,255,255,0.25);
-      text-align: center;
-    }
-
-    .hint {
-      margin-top: 10px;
-      color: rgba(255,255,255,0.15);
-      font-size: 11px;
-      letter-spacing: 0.3px;
-      text-align: center;
-      padding: 0 16px;
-    }
-
-    #bg-loading {
-      position: fixed;
-      bottom: 12px;
-      right: 16px;
-      color: rgba(255,255,255,0.18);
-      font-size: 10px;
-      letter-spacing: 0.5px;
-      transition: opacity 0.5s;
-      pointer-events: none;
-    }
-
-    /* >>> MOBILE / WORDPRESS AJUSTES <<< */
-    @media (max-width: 768px) {
-      html, body {
-        /* evita conflitos de 100% altura dentro do iframe em mobile */
-        height: auto;
-        min-height: 100vh;
-        overflow: hidden;
-      }
-
-      body {
-        justify-content: flex-start;
-      }
-
-      #flipbook-wrapper {
-        padding-top: 10px;
-      }
-
-      #flipbook-container {
-        padding: 0 4px;
-      }
-
-      #flipbook {
-        box-shadow: 0 24px 60px rgba(0,0,0,0.9);
-      }
-
-      /* controles fixos na parte de baixo pra não “sumirem” no WP */
-      #controls {
-        position: fixed;
-        left: 0;
-        right: 0;
-        bottom: 8px;
-        margin-top: 0;
-        padding: 6px 8px;
-        gap: 8px;
-        background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
-        z-index: 900;
-      }
-
-      .btn-icon {
-        width: 32px;
-        height: 32px;
-        font-size: 13px;
-      }
-
-      #page-indicator {
-        font-size: 12px;
-        min-width: 80px;
-      }
-
-      /* thumbnails em faixa rolável, acima dos controles */
-      #thumbnails {
-        position: fixed;
-        left: 0;
-        right: 0;
-        bottom: 52px;
-        margin-top: 0;
-        padding: 6px 8px;
-        border-radius: 0;
-        border-left: none;
-        border-right: none;
-        justify-content: flex-start;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        background: rgba(0,0,0,0.8);
-        z-index: 850;
-      }
-
-      .thumb {
-        width: 64px;
-        height: 48px;
-      }
-
-      .thumb-label {
-        font-size: 9px;
-      }
-
-      /* zoom um pouco mais compacto */
-      #zoom-img {
-        max-width: 100vw;
-        max-height: 80vh;
-      }
-
-      #zoom-hint-text {
-        bottom: 30px;
-        font-size: 10px;
-      }
-
-      #zoom-page-indicator {
-        bottom: 12px;
-        font-size: 11px;
-      }
-
-      #bg-loading {
-        bottom: 6px;
-        right: 10px;
-        font-size: 9px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      #loading-title {
-        font-size: 18px;
-      }
-      #loading-subtitle {
-        font-size: 11px;
-      }
-      #loading-bar-wrap {
-        width: 220px;
-      }
-      .loading-thumb {
-        width: 44px;
-        height: 32px;
-      }
-
-      .btn-icon {
-        width: 30px;
-        height: 30px;
-        font-size: 12px;
-      }
-
-      #page-indicator {
-        font-size: 11px;
-      }
+    .router-btn:hover { background: rgba(212, 169, 106, 0.15); border-color: rgba(212, 169, 106, 0.8); transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.6); }
+    .router-btn i { font-size: 48px; font-style: normal; }
+    @media (max-width: 600px) {
+      .router-buttons { flex-direction: column; gap: 16px; }
+      .router-btn { padding: 20px; flex-direction: row; justify-content: center; font-size: 18px; }
+      .router-btn i { font-size: 32px; }
+      .router-title { font-size: 26px; }
+      .router-subtitle { font-size: 16px; margin-bottom: 30px; }
     }
   </style>
 </head>
 <body>
 
-<!-- Loading screen -->
+  <!-- TELA DE ESCOLHA INICIAL -->
+  <div id="router-ui">
+    <div class="router-title">Seres 2026</div>
+    <div class="router-subtitle">Como você está acessando o fotolivro?</div>
+    <div class="router-buttons">
+      <button class="router-btn" onclick="loadApp('desktop')">
+        <i>💻</i><span>Computador</span>
+      </button>
+      <button class="router-btn" onclick="loadApp('mobile')">
+        <i>📱</i><span>Celular</span>
+      </button>
+    </div>
+  </div>
+
+<!-- ======================================================================= -->
+<!-- CÓDIGO DESKTOP                                                          -->
+<!-- ======================================================================= -->
+<textarea id="desktop-code" style="display:none;">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Seres 2026</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { overflow: hidden; height: 100%; width: 100%; }
+    body { background: radial-gradient(ellipse at center, #2c1810 0%, #0d0805 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: Georgia, serif; }
+    #loading-screen { position: fixed; inset: 0; background: radial-gradient(ellipse at center, #2c1810 0%, #0d0805 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; gap: 28px; transition: opacity 0.6s ease; }
+    #loading-screen.fade-out { opacity: 0; pointer-events: none; }
+    #loading-title { color: #e8dcc8; font-size: 22px; letter-spacing: 2px; opacity: 0.85; }
+    #loading-subtitle { color: rgba(255,255,255,0.3); font-size: 13px; letter-spacing: 1px; margin-top: -18px; }
+    #loading-bar-wrap { width: 260px; height: 3px; background: rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden; }
+    #loading-bar { height: 100%; width: 0%; background: linear-gradient(to right, #a0724a, #d4a96a); border-radius: 10px; transition: width 0.3s ease; }
+    #loading-percent { color: rgba(255,255,255,0.25); font-size: 12px; letter-spacing: 1px; }
+    #loading-pages-preview { display: flex; gap: 8px; margin-top: 4px; }
+    .loading-thumb { width: 52px; height: 39px; border-radius: 3px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); overflow: hidden; transition: opacity 0.4s; opacity: 0.3; }
+    .loading-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .loading-thumb.loaded { opacity: 1; border-color: rgba(212,169,106,0.4); }
+    #flipbook-wrapper { display: flex; flex-direction: column; align-items: center; opacity: 0; transition: opacity 0.6s ease; width: 100%; }
+    #flipbook-wrapper.visible { opacity: 1; }
+    #flipbook-container { display: flex; align-items: center; justify-content: center; width: 100%; }
+    #flipbook { box-shadow: 0 40px 100px rgba(0,0,0,0.8); }
+    .page { width: 100%; height: 100%; overflow: hidden; background: #111; }
+    .page img { width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none; user-select: none; -webkit-user-drag: none; }
+    .page-blank { width: 100%; height: 100%; background: #1a1008; }
+    #zoom-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.93); z-index: 1000; align-items: center; justify-content: center; flex-direction: column; }
+    #zoom-overlay.active { display: flex; }
+    #zoom-img-wrap { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; overflow: hidden; }
+    #zoom-img { max-width: 90vw; max-height: 85vh; object-fit: contain; border-radius: 4px; box-shadow: 0 30px 80px rgba(0,0,0,0.9); transition: transform 0.15s ease, opacity 0.25s ease; transform-origin: center center; user-select: none; -webkit-user-drag: none; }
+    .zoom-arrow { position: fixed; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #e8dcc8; width: 44px; height: 44px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s, opacity 0.2s; z-index: 1002; }
+    .zoom-arrow:hover { background: rgba(255,255,255,0.18); }
+    .zoom-arrow.hidden { opacity: 0; pointer-events: none; }
+    #zoom-arrow-left  { left: 16px; }
+    #zoom-arrow-right { right: 16px; }
+    #zoom-page-indicator { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.35); font-size: 12px; letter-spacing: 0.4px; pointer-events: none; }
+    #zoom-close { position: fixed; top: 16px; right: 20px; color: rgba(255,255,255,0.5); font-size: 26px; cursor: pointer; z-index: 1003; line-height: 1; transition: color 0.2s; }
+    #zoom-close:hover { color: #fff; }
+    #zoom-hint-text { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.18); font-size: 11px; pointer-events: none; white-space: nowrap; }
+    #controls { margin-top: 18px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .btn { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.18); color: #e8dcc8; padding: 9px 20px; border-radius: 30px; cursor: pointer; font-size: 13px; letter-spacing: 0.4px; transition: background 0.2s, transform 0.15s, box-shadow 0.2s; white-space: nowrap; }
+    .btn:hover:not(:disabled) { background: rgba(255,255,255,0.14); }
+    .btn:disabled { opacity: 0.25; cursor: default; }
+    .btn.flipping { animation: btnPulse 0.55s ease; }
+    @keyframes btnPulse { 0% { transform: scale(1); } 30% { transform: scale(0.93); } 70% { transform: scale(1.04); } 100% { transform: scale(1); } }
+    #page-indicator { color: rgba(255,255,255,0.35); font-size: 13px; min-width: 90px; text-align: center; }
+    .btn-icon { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.18); color: #e8dcc8; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; flex-shrink: 0; }
+    .btn-icon:hover { background: rgba(255,255,255,0.14); }
+    #thumbnails { margin-top: 16px; display: flex; gap: 8px; align-items: flex-start; justify-content: center; padding: 10px 16px; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); }
+    .thumb-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; transition: opacity 0.3s; }
+    .thumb { width: 72px; height: 54px; object-fit: cover; border-radius: 3px; cursor: pointer; border: 2px solid transparent; opacity: 0.5; transition: opacity 0.25s, border-color 0.25s, transform 0.2s, box-shadow 0.25s; display: block; user-select: none; }
+    .thumb:hover { opacity: 0.85; transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0,0.5); }
+    .thumb.active { opacity: 1; border-color: #d4a96a; box-shadow: 0 0 12px rgba(212,169,106,0.4); transform: translateY(-3px); }
+    .thumb-label { font-size: 10px; color: rgba(255,255,255,0.25); text-align: center; }
+    .hint { margin-top: 10px; color: rgba(255,255,255,0.15); font-size: 11px; letter-spacing: 0.3px; text-align: center; padding: 0 16px; }
+    #bg-loading { position: fixed; bottom: 12px; right: 16px; color: rgba(255,255,255,0.18); font-size: 10px; letter-spacing: 0.5px; transition: opacity 0.5s; pointer-events: none; }
+    @media (max-width: 768px) {
+      html, body { height: auto; min-height: 100vh; overflow: hidden; }
+      body { justify-content: flex-start; }
+      #flipbook-wrapper { padding-top: 10px; }
+      #flipbook-container { padding: 0 4px; }
+      #flipbook { box-shadow: 0 24px 60px rgba(0,0,0,0.9); }
+      #controls { position: fixed; left: 0; right: 0; bottom: 8px; margin-top: 0; padding: 6px 8px; gap: 8px; background: linear-gradient(to top, rgba(0,0,0,0.85), transparent); z-index: 900; }
+      .btn-icon { width: 32px; height: 32px; font-size: 13px; }
+      #page-indicator { font-size: 12px; min-width: 80px; }
+      #thumbnails { position: fixed; left: 0; right: 0; bottom: 52px; margin-top: 0; padding: 6px 8px; border-radius: 0; border-left: none; border-right: none; justify-content: flex-start; overflow-x: auto; -webkit-overflow-scrolling: touch; background: rgba(0,0,0,0.8); z-index: 850; }
+      .thumb { width: 64px; height: 48px; }
+      .thumb-label { font-size: 9px; }
+      #zoom-img { max-width: 100vw; max-height: 80vh; }
+      #zoom-hint-text { bottom: 30px; font-size: 10px; }
+      #zoom-page-indicator { bottom: 12px; font-size: 11px; }
+      #bg-loading { bottom: 6px; right: 10px; font-size: 9px; }
+    }
+    @media (max-width: 480px) {
+      #loading-title { font-size: 18px; }
+      #loading-subtitle { font-size: 11px; }
+      #loading-bar-wrap { width: 220px; }
+      .loading-thumb { width: 44px; height: 32px; }
+      .btn-icon { width: 30px; height: 30px; font-size: 12px; }
+      #page-indicator { font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+
 <div id="loading-screen">
   <div id="loading-title">Seres 2026</div>
   <div id="loading-subtitle">Preparando as primeiras páginas…</div>
-  <div id="loading-bar-wrap">
-    <div id="loading-bar"></div>
-  </div>
+  <div id="loading-bar-wrap"><div id="loading-bar"></div></div>
   <div id="loading-percent">0%</div>
   <div id="loading-pages-preview"></div>
 </div>
 
-<!-- Zoom overlay -->
 <div id="zoom-overlay">
   <span id="zoom-close">✕</span>
-  <div id="zoom-img-wrap">
-    <img id="zoom-img" src="" alt="Zoom" />
-  </div>
+  <div id="zoom-img-wrap"><img id="zoom-img" src="" alt="Zoom" /></div>
   <button class="zoom-arrow hidden" id="zoom-arrow-left">‹</button>
   <button class="zoom-arrow hidden" id="zoom-arrow-right">›</button>
   <div id="zoom-page-indicator"></div>
   <div id="zoom-hint-text">Scroll para ampliar • Clique fora para fechar</div>
 </div>
 
-<!-- Flipbook -->
 <div id="flipbook-wrapper">
   <div id="flipbook-container">
     <div id="flipbook">
-      <div class="page page-blank"></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-01-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-02-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-03-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-04-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-05-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-06-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-07-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-08-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-09-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-10-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-11-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-12-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-13-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-14-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-15-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-16-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-17-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-18-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-19-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-20-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-21-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-22-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-23-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-24-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-25-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-26-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-27-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-28-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-29-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-30-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-31-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-32-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-33-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-34-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-35-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-36-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-37-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-38-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-39-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-40-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-41-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-42-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-43-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-44-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-45-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-46-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-47-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-48-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-49-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-50-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-51-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-52-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-53-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-54-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-55-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-56-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-57-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-58-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-59-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-60-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-61-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-62-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-63-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-64-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-65-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-66-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-67-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-68-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-69-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-70-scaled.jpg" src="" /></div>
-      <div class="page"><img data-src="https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-71-scaled.jpg" src="" /></div>
+      <!-- As páginas serão injetadas aqui pelo JS -->
     </div>
   </div>
 
   <div id="controls">
     <button class="btn-icon" id="btn-prev">←</button>
-    <span id="page-indicator">Página 1 de 71</span>
+    <span id="page-indicator">Página 1</span>
     <button class="btn-icon" id="btn-next">→</button>
     <button class="btn-icon" id="btn-zoom">🔍</button>
     <button class="btn-icon" id="btn-fullscreen">⛶</button>
@@ -629,9 +178,11 @@
 
 <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
 <script>
-  // Array de URLs das imagens
+  // ========================================================================
+  // COLE SEUS LINKS AQUI (VERSÃO DESKTOP)
+  // ========================================================================
   const images = [
-    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-01-scaled.jpg",
+     "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-01-scaled.jpg",
     "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-02-scaled.jpg",
     "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-03-scaled.jpg",
     "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-04-scaled.jpg",
@@ -704,12 +255,22 @@
     "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-71-scaled.jpg"
   ];
 
+  // Injeta as páginas dinamicamente
+  const flipbookEl = document.getElementById('flipbook');
+  flipbookEl.innerHTML = '<div class="page page-blank"></div>';
+  images.forEach(src => {
+    const div = document.createElement('div');
+    div.className = 'page';
+    div.innerHTML = `<img data-src="${src}" src="" />`;
+    flipbookEl.appendChild(div);
+  });
+
   const INITIAL_LOAD  = 6;
   const PRELOAD_AHEAD = 6;
   const THUMB_WINDOW  = 5;
   const loaded = new Array(images.length).fill(false);
   let pageFlip = null;
-  const isMobile = window.innerWidth <= 600; // Variável isMobile do seu código original
+  const isMobile = window.innerWidth <= 600;
 
   const previewContainer = document.getElementById('loading-pages-preview');
   const previewThumbs = [];
@@ -740,7 +301,6 @@
   function injectImage(index) {
     const pageImgs = document.querySelectorAll('#flipbook .page img');
     if (pageImgs[index]) pageImgs[index].src = images[index];
-    // atualiza thumb se ela existir no DOM
     const thumbEl = document.querySelector(`.thumb[data-index="${index}"]`);
     if (thumbEl) thumbEl.src = images[index];
   }
@@ -781,7 +341,6 @@
     if (pending > 0) bgEl.textContent = `Carregando páginas… (${pending} restantes)`;
   }
 
-  // ── Proporção 4:3 ──
   function calcDimensions() {
     if (isMobile) {
       const pw = Math.floor(window.innerWidth * 0.96);
@@ -799,41 +358,22 @@
   function initFlipbook() {
     const { pw, ph, portrait } = calcDimensions();
     pageFlip = new St.PageFlip(document.getElementById('flipbook'), {
-      width: pw,
-      height: ph,
-      size: 'fixed',
-      drawShadow: true,
-      flippingTime: 950,
-      usePortrait: portrait,
-      autoSize: false,
-      maxShadowOpacity: 0.7,
-      showCover: false,
-      startPage: 0,
-      mobileScrollSupport: false,
-      clickEventForward: false,
-      useMouseEvents: true,
-      swipeDistance: 40,
-      showPageCorners: false,
-      disableFlipByClick: true
+      width: pw, height: ph, size: 'fixed', drawShadow: true, flippingTime: 950,
+      usePortrait: portrait, autoSize: false, maxShadowOpacity: 0.7, showCover: false,
+      startPage: 0, mobileScrollSupport: false, clickEventForward: false,
+      useMouseEvents: true, swipeDistance: 40, showPageCorners: false, disableFlipByClick: true
     });
 
     pageFlip.loadFromHTML(document.querySelectorAll('.page'));
 
     pageFlip.on('init', () => {
-      updateIndicator();
-      updateButtons();
-      buildThumbnails();
-      preloadAround(0);
+      updateIndicator(); updateButtons(); buildThumbnails(); preloadAround(0);
     });
 
     pageFlip.on('flip', () => {
-      updateIndicator();
-      updateButtons();
-      updateThumbs();
-      preloadAround(getCurrentRealPage());
+      updateIndicator(); updateButtons(); updateThumbs(); preloadAround(getCurrentRealPage());
     });
 
-    // >>> MOBILE / WORDPRESS AJUSTES: redimensionar ao girar a tela ou mudar barra do navegador <<<
     window.addEventListener('resize', () => {
       if (!pageFlip) return;
       const dims = calcDimensions();
@@ -841,11 +381,9 @@
     });
   }
 
-  // ── Thumbnails: janela deslizante de 5 ──
   function buildThumbnails() {
     const container = document.getElementById('thumbnails');
     container.innerHTML = '';
-    // cria apenas THUMB_WINDOW slots
     for (let slot = 0; slot < THUMB_WINDOW; slot++) {
       const wrap = document.createElement('div');
       wrap.className = 'thumb-wrap';
@@ -883,21 +421,18 @@
       const label = wrap.querySelector('.thumb-label');
 
       img.dataset.index = idx;
-      img.src   = loaded[idx] ? images[idx] : (images[idx]); // carrega ao aparecer
+      img.src   = loaded[idx] ? images[idx] : (images[idx]);
       img.title = `Página ${idx + 1}`;
       img.classList.toggle('active', idx === real || (!isMobile && idx === real + 1));
       label.textContent = `${idx + 1}`;
 
-      // remove listeners antigos e adiciona novo
       const newImg = img.cloneNode(true);
       newImg.addEventListener('click', () => goToPage(idx));
       wrap.replaceChild(newImg, img);
     });
   }
 
-  function getCurrentRealPage() {
-    return Math.max(0, pageFlip.getCurrentPageIndex() - 1);
-  }
+  function getCurrentRealPage() { return Math.max(0, pageFlip.getCurrentPageIndex() - 1); }
 
   function getVisibleImageIndexes() {
     const real = getCurrentRealPage();
@@ -930,7 +465,6 @@
     btn.addEventListener('animationend', () => btn.classList.remove('flipping'), { once: true });
   }
 
-  // Zoom
   const zoomOverlay    = document.getElementById('zoom-overlay');
   const zoomImg        = document.getElementById('zoom-img');
   const zoomArrowLeft  = document.getElementById('zoom-arrow-left');
@@ -993,7 +527,6 @@
     if (visible.length > 0) openZoom(visible[0]);
   });
 
-  // Fullscreen
   const btnFs = document.getElementById('btn-fullscreen');
   function toggleFullscreen() {
     if (!document.fullscreenElement) {
@@ -1010,7 +543,6 @@
   btnFs.addEventListener('click', toggleFullscreen);
   document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) btnFs.textContent = '⛶'; });
 
-  // Teclado
   const btnNext = document.getElementById('btn-next');
   const btnPrev = document.getElementById('btn-prev');
 
@@ -1030,33 +562,23 @@
   btnNext.addEventListener('click', () => { animateBtn(btnNext); pageFlip.flipNext(); });
   btnPrev.addEventListener('click', () => { animateBtn(btnPrev); pageFlip.flipPrev(); });
 
-  // >>> MOBILE / WORDPRESS AJUSTES: swipe manual no mobile (garante navegação mesmo se o PageFlip falhar) <<<
   if (isMobile) {
     const flipbookEl = document.getElementById('flipbook');
     let touchXStart = null;
     flipbookEl.addEventListener('touchstart', e => {
-      if (e.touches.length === 1) {
-        touchXStart = e.touches[0].clientX;
-      }
+      if (e.touches.length === 1) touchXStart = e.touches[0].clientX;
     }, { passive: true });
 
     flipbookEl.addEventListener('touchend', e => {
       if (touchXStart === null || !pageFlip) return;
       const touchXEnd = e.changedTouches[0].clientX;
       const deltaX = touchXEnd - touchXStart;
-      const threshold = 40;
-      if (deltaX < -threshold) {
-        animateBtn(btnNext);
-        pageFlip.flipNext();
-      } else if (deltaX > threshold) {
-        animateBtn(btnPrev);
-        pageFlip.flipPrev();
-      }
+      if (deltaX < -40) { animateBtn(btnNext); pageFlip.flipNext(); } 
+      else if (deltaX > 40) { animateBtn(btnPrev); pageFlip.flipPrev(); }
       touchXStart = null;
     });
   }
 
-  // Bootstrap
   (async () => {
     await initialLoad();
     initFlipbook();
@@ -1066,6 +588,383 @@
     flipbookWrapper.classList.add('visible');
     setTimeout(() => loadingScreen.style.display = 'none', 700);
   })();
+</script>
+</body>
+</html>
+</textarea>
+
+<!-- ======================================================================= -->
+<!-- CÓDIGO MOBILE                                                           -->
+<!-- ======================================================================= -->
+<textarea id="mobile-code" style="display:none;">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Seres 2026 - Mobile</title>
+  <style>
+    :root { --bg-color: #0d0805; --accent-color: #d4a96a; --text-color: #e8dcc8; --ui-bg: rgba(15, 10, 7, 0.95); --ui-border: rgba(255, 255, 255, 0.1); }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100dvh; width: 100vw; overflow: hidden; background-color: var(--bg-color); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text-color); }
+    body { display: flex; flex-direction: column; background: radial-gradient(circle at center, #2c1810 0%, #0d0805 100%); }
+    #loading-screen { position: fixed; inset: 0; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; gap: 20px; transition: opacity 0.5s ease; }
+    #loading-screen.fade-out { opacity: 0; pointer-events: none; }
+    #loading-title { font-size: 24px; font-weight: bold; letter-spacing: 1px; color: var(--accent-color); }
+    #loading-subtitle { font-size: 14px; color: rgba(255,255,255,0.5); }
+    #loading-bar-wrap { width: 80%; max-width: 300px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
+    #loading-bar { height: 100%; width: 0%; background: var(--accent-color); transition: width 0.3s ease; }
+    #loading-percent { font-size: 12px; color: rgba(255,255,255,0.4); }
+    #app-container { display: flex; flex-direction: column; height: 100dvh; width: 100%; opacity: 0; transition: opacity 0.6s ease; }
+    #app-container.visible { opacity: 1; }
+    #flipbook-area { flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; position: relative; overflow: hidden; touch-action: none; }
+    #flipbook { box-shadow: 0 15px 40px rgba(0,0,0,0.9); }
+    .page { width: 100%; height: 100%; background: transparent; overflow: hidden; position: relative; }
+    .page::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to right, rgba(0,0,0,0.15) 0%, rgba(255,255,255,0.05) 4%, rgba(255,255,255,0) 20%, rgba(0,0,0,0) 80%, rgba(0,0,0,0.1) 100%); box-shadow: inset -2px 0 10px rgba(0,0,0,0.1); pointer-events: none; z-index: 2; }
+    .page img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; user-select: none; }
+    .page-intro { background: radial-gradient(circle at center, #2c1810 0%, #0d0805 100%); display: flex; align-items: center; justify-content: center; text-align: center; }
+    .intro-content { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 20px; }
+    .intro-text { font-size: 15px; line-height: 1.6; color: var(--text-color); letter-spacing: 1px; font-weight: 300; opacity: 0.8; }
+    .minimal-arrows { display: flex; gap: 4px; font-size: 42px; color: var(--accent-color); font-weight: 200; margin-bottom: 8px; }
+    .minimal-arrows span { animation: arrowSlide 1.8s infinite ease-in-out; opacity: 0; }
+    .minimal-arrows span:nth-child(3) { animation-delay: 0s; }
+    .minimal-arrows span:nth-child(2) { animation-delay: 0.2s; }
+    .minimal-arrows span:nth-child(1) { animation-delay: 0.4s; }
+    @keyframes arrowSlide { 0% { opacity: 0; transform: translateX(10px); } 50% { opacity: 1; transform: translateX(0); } 100% { opacity: 0; transform: translateX(-10px); } }
+    #bottom-ui { display: flex; flex-direction: column; background: var(--ui-bg); border-top: 1px solid var(--ui-border); padding-bottom: env(safe-area-inset-bottom); z-index: 100; }
+    #thumbnails-scroll { display: flex; gap: 12px; padding: 12px 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    #thumbnails-scroll::-webkit-scrollbar { display: none; }
+    .thumb-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; }
+    .thumb { width: 70px; height: 49px; object-fit: cover; border-radius: 4px; border: 2px solid transparent; opacity: 0.5; transition: all 0.3s ease; }
+    .thumb.active { opacity: 1; border-color: var(--accent-color); transform: scale(1.05); }
+    .thumb-label { font-size: 10px; color: rgba(255,255,255,0.5); }
+    #controls { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; gap: 10px; }
+    .btn-icon { background: rgba(255,255,255,0.08); border: none; color: var(--text-color); width: 44px; height: 44px; border-radius: 50%; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+    .btn-icon:active { background: rgba(255,255,255,0.2); transform: scale(0.95); }
+    .btn-icon:disabled { opacity: 0.2; pointer-events: none; }
+    #page-indicator { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.8); text-align: center; flex: 1; letter-spacing: 0.5px; }
+    #zoom-overlay { display: none; position: fixed; inset: 0; background: #000; z-index: 1000; flex-direction: column; }
+    #zoom-overlay.active { display: flex; }
+    #zoom-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; padding-top: calc(15px + env(safe-area-inset-top)); background: rgba(0,0,0,0.8); color: #fff; z-index: 1001; }
+    #zoom-close { font-size: 24px; padding: 10px; margin: -10px; }
+    #zoom-scroll-area { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; -webkit-overflow-scrolling: touch; }
+    #zoom-img { max-width: 200vw; max-height: 200vh; width: 100%; object-fit: contain; transition: transform 0.2s; }
+  </style>
+</head>
+<body>
+
+<div id="loading-screen">
+  <div id="loading-title">Seres 2026</div>
+  <div id="loading-subtitle">Preparando o fotolivro...</div>
+  <div id="loading-bar-wrap"><div id="loading-bar"></div></div>
+  <div id="loading-percent">0%</div>
+</div>
+
+<div id="zoom-overlay">
+  <div id="zoom-header">
+    <span id="zoom-page-indicator">Página 1</span>
+    <span id="zoom-close">✕</span>
+  </div>
+  <div id="zoom-scroll-area">
+    <img id="zoom-img" src="" alt="Zoom" />
+  </div>
+</div>
+
+<div id="app-container">
+  <div id="flipbook-area">
+    <div id="flipbook">
+      <div class="page page-intro">
+        <div class="intro-content">
+          <div class="minimal-arrows">
+            <span>‹</span><span>‹</span><span>‹</span>
+          </div>
+          <div class="intro-text">
+            Deslize da direita para a esquerda<br>para começar
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="bottom-ui">
+    <div id="thumbnails-scroll"></div>
+    <div id="controls">
+      <button class="btn-icon" id="btn-prev">←</button>
+      <span id="page-indicator">Início</span>
+      <button class="btn-icon" id="btn-zoom">🔍</button>
+      <button class="btn-icon" id="btn-next">→</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+<script>
+  // ========================================================================
+  // COLE SEUS LINKS AQUI (VERSÃO MOBILE)
+  // ========================================================================
+  const images = [
+  "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-01-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-02-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-03-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-04-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-05-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-06-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-07-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-08-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-09-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-10-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-11-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-12-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-13-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-14-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-15-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-16-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-17-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-18-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-19-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-20-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-21-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-22-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-23-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-24-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-25-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-26-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-27-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-28-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-29-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-30-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-31-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-32-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-33-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-34-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-35-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-36-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-37-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-38-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-39-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-40-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-41-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-42-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-43-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-44-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-45-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-46-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-47-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-48-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-49-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-50-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-51-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-52-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-53-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-54-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-55-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-56-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-57-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-58-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-59-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-60-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-61-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-62-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-63-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-64-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-65-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-66-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-67-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-68-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-69-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-70-scaled.jpg",
+    "https://etc.ufma.br/wp-content/uploads/2026/03/Seres-2026-71-scaled.jpg"
+ ];
+
+  const INITIAL_LOAD = 4;
+  const loaded = new Array(images.length).fill(false);
+  let pageFlip = null;
+
+  const flipbookEl = document.getElementById('flipbook');
+  images.forEach((src, i) => {
+    const div = document.createElement('div');
+    div.className = 'page';
+    div.innerHTML = `<img data-index="${i}" src="" />`;
+    flipbookEl.appendChild(div);
+  });
+
+  const thumbScroll = document.getElementById('thumbnails-scroll');
+  images.forEach((src, i) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'thumb-wrap';
+    wrap.innerHTML = `<img class="thumb" data-index="${i}" src="" /><div class="thumb-label">${i + 1}</div>`;
+    wrap.addEventListener('click', () => goToPage(i));
+    thumbScroll.appendChild(wrap);
+  });
+
+  function loadImage(index) {
+    return new Promise(resolve => {
+      if (loaded[index] || index >= images.length) { resolve(); return; }
+      const img = new Image();
+      img.onload = img.onerror = () => {
+        loaded[index] = true;
+        const pageImg = document.querySelector(`.page img[data-index="${index}"]`);
+        if (pageImg) pageImg.src = images[index];
+        const thumbImg = document.querySelector(`.thumb[data-index="${index}"]`);
+        if (thumbImg) thumbImg.src = images[index];
+        resolve();
+      };
+      img.src = images[index];
+    });
+  }
+
+  async function initialLoad() {
+    const bar = document.getElementById('loading-bar');
+    const percent = document.getElementById('loading-percent');
+    let done = 0;
+    const promises = [];
+    for (let i = 0; i < INITIAL_LOAD; i++) {
+      promises.push(loadImage(i).then(() => {
+        done++;
+        const pct = Math.round((done / INITIAL_LOAD) * 100);
+        bar.style.width = pct + '%';
+        percent.textContent = pct + '%';
+      }));
+    }
+    await Promise.all(promises);
+  }
+
+  function preloadAhead(currentIndex) {
+    for (let i = currentIndex; i < currentIndex + 4; i++) {
+      if (i < images.length) loadImage(i);
+    }
+  }
+
+  function calcDimensions() {
+    const area = document.getElementById('flipbook-area');
+    const maxWidth = area.clientWidth * 0.98; 
+    const maxHeight = area.clientHeight * 0.95;
+    const imgWidth = 3543;
+    const imgHeight = 2480;
+    const ratio = imgWidth / imgHeight; 
+    let pw = maxWidth;
+    let ph = pw / ratio;
+    if (ph > maxHeight) { ph = maxHeight; pw = ph * ratio; }
+    return { pw: Math.floor(pw), ph: Math.floor(ph) };
+  }
+
+  function initFlipbook() {
+    const dims = calcDimensions();
+    pageFlip = new St.PageFlip(document.getElementById('flipbook'), {
+      width: dims.pw, height: dims.ph, size: 'fixed', drawShadow: true,
+      flippingTime: 1600, usePortrait: true, maxShadowOpacity: 0.85, 
+      showCover: false, mobileScrollSupport: false, swipeDistance: 40
+    });
+
+    pageFlip.loadFromHTML(document.querySelectorAll('.page'));
+
+    pageFlip.on('flip', (e) => {
+      const pageIndex = e.data; 
+      updateUI(pageIndex);
+      if (pageIndex > 0) preloadAhead(pageIndex - 1);
+    });
+
+    window.addEventListener('resize', () => {
+      if (!pageFlip) return;
+      const newDims = calcDimensions();
+      pageFlip.update(newDims.pw, newDims.ph);
+    });
+  }
+
+  function updateUI(pageIndex) {
+    const btnPrev = document.getElementById('btn-prev');
+    const btnNext = document.getElementById('btn-next');
+    const btnZoom = document.getElementById('btn-zoom');
+    const indicator = document.getElementById('page-indicator');
+
+    document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+
+    if (pageIndex === 0) {
+      indicator.textContent = `Início`;
+      btnPrev.disabled = true;
+      btnNext.disabled = false;
+      btnZoom.disabled = true; 
+    } else {
+      const imgIndex = pageIndex - 1;
+      indicator.textContent = `Página ${imgIndex + 1} de ${images.length}`;
+      btnPrev.disabled = false;
+      btnNext.disabled = (imgIndex >= images.length - 1);
+      btnZoom.disabled = false;
+
+      const activeThumb = document.querySelector(`.thumb[data-index="${imgIndex}"]`);
+      if (activeThumb) {
+        activeThumb.classList.add('active');
+        activeThumb.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      }
+    }
+  }
+
+  function goToPage(imgIndex) { if (pageFlip) pageFlip.flip(imgIndex + 1); }
+
+  let touchStartX = 0;
+  document.getElementById('flipbook-area').addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+  }, {passive: true});
+
+  document.getElementById('flipbook-area').addEventListener('touchend', e => {
+    const touchEndX = e.changedTouches[0].screenX;
+    const diff = touchStartX - touchEndX;
+    if (diff > 40) pageFlip.flipNext();
+    else if (diff < -40) pageFlip.flipPrev();
+  }, {passive: true});
+
+  document.getElementById('btn-next').addEventListener('click', () => pageFlip.flipNext());
+  document.getElementById('btn-prev').addEventListener('click', () => pageFlip.flipPrev());
+
+  const zoomOverlay = document.getElementById('zoom-overlay');
+  const zoomImg = document.getElementById('zoom-img');
+
+  function openZoom() {
+    const currentPage = pageFlip.getCurrentPageIndex();
+    if (currentPage === 0) return; 
+    const imgIndex = currentPage - 1;
+    zoomImg.src = images[imgIndex];
+    document.getElementById('zoom-page-indicator').textContent = `Página ${imgIndex + 1}`;
+    zoomOverlay.classList.add('active');
+  }
+
+  document.getElementById('btn-zoom').addEventListener('click', openZoom);
+  document.getElementById('zoom-close').addEventListener('click', () => zoomOverlay.classList.remove('active'));
+
+  let lastTap = 0;
+  document.getElementById('flipbook-area').addEventListener('touchend', function(e) {
+    const currentTime = new Date().getTime();
+    const tapLength = currentTime - lastTap;
+    if (tapLength < 300 && tapLength > 0) { openZoom(); e.preventDefault(); }
+    lastTap = currentTime;
+  });
+
+  (async () => {
+    await initialLoad();
+    initFlipbook();
+    updateUI(0); 
+    const loadingScreen = document.getElementById('loading-screen');
+    const appContainer = document.getElementById('app-container');
+    loadingScreen.classList.add('fade-out');
+    appContainer.classList.add('visible');
+    setTimeout(() => loadingScreen.style.display = 'none', 500);
+    preloadAhead(INITIAL_LOAD);
+  })();
+</script>
+</body>
+</html>
+</textarea>
+
+<!-- ======================================================================= -->
+<!-- SCRIPT DO ROTEADOR (Faz a mágica de trocar de tela)                     -->
+<!-- ======================================================================= -->
+<script>
+  function loadApp(type) {
+    const code = document.getElementById(type + '-code').value;
+    document.open();
+    document.write(code);
+    document.close();
+  }
 </script>
 </body>
 </html>
